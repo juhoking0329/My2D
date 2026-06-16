@@ -22,11 +22,13 @@ namespace MyBird
         private void OnEnable()
         {
             Player.OnGameStart += StartSpawning;
+            Player.OnGameOver += StopSpawning;  // 추가
         }
 
         private void OnDisable()
         {
             Player.OnGameStart -= StartSpawning;
+            Player.OnGameOver -= StopSpawning;  // 추가
         }
 
         private void StartSpawning()
@@ -34,6 +36,11 @@ namespace MyBird
             isPlaying = true;
             nextInterval = GetRandomInterval();
             timer = 0f;
+        }
+
+        private void StopSpawning()
+        {
+            isPlaying = false;  // 스폰 중단
         }
 
         private void Update()

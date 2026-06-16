@@ -232,7 +232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MyBird.PipeMove
   speed: 5
-  destroyX: -12
+  destroyX: -3
 --- !u!1 &8686274952132397834
 GameObject:
   m_ObjectHideFlags: 0

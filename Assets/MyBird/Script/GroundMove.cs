@@ -8,15 +8,18 @@ namespace MyBird
         [SerializeField] private float speed = 2f;
 
         private bool isPlaying = false;
+        private bool isGameOver = false;
 
         private void OnEnable()
         {
             Player.OnGameStart += StartMoving;
+            Player.OnGameOver += StopMoving;
         }
 
         private void OnDisable()
         {
             Player.OnGameStart -= StartMoving;
+            Player.OnGameOver -= StopMoving;
         }
 
         private void StartMoving()
@@ -24,9 +27,14 @@ namespace MyBird
             isPlaying = true;
         }
 
+        private void StopMoving()
+        {
+            isGameOver = true;
+        }
+
         private void Update()
         {
-            if (!isPlaying) return;
+            if (!isPlaying || isGameOver) return;
 
             transform.Translate(Vector3.left * speed * Time.deltaTime, Space.World);
 
