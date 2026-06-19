@@ -7,10 +7,10 @@ namespace My2DGame
     /// </summary>
     public class Background : MonoBehaviour
     {
+        [SerializeField] private float parallaxFactor = 0.5f; // 0 = 완전고정, 1 = 카메라랑 같이 움직임
+
         private Camera cam;
         private Vector3 lastCamPos;
-
-        [SerializeField] private float parallaxStrength = 1f; // 패럴랙스 강도 (튜닝용)
 
         private void Start()
         {
@@ -20,11 +20,10 @@ namespace My2DGame
 
         private void LateUpdate()
         {
+            // 카메라가 이전 프레임에서 얼마나 움직였는지
             Vector3 camDelta = cam.transform.position - lastCamPos;
 
-            // Z값이 클수록 느리게 움직이도록 반전
-            float parallaxFactor = 1f / (transform.position.z + parallaxStrength);
-
+            // 패럴랙스 비율만큼만 배경 이동
             transform.position += new Vector3(camDelta.x * parallaxFactor, 0f, 0f);
 
             lastCamPos = cam.transform.position;

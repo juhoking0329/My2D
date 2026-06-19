@@ -4,38 +4,98 @@ using UnityEngine.InputSystem;
 namespace My2DGame
 {
     /// <summary>
-    /// 플레이어 좌우 이동: Rigidbody2D.velocity를 사용하여 입력만큼 이동합니다.
-    /// New Input System / Move 액션은 __Invoke Unity Events__로 설정하고
-    /// 해당 이벤트에 이 클래스의 OnMove(Vector2) 메서드를 연결하세요.
+    /// 플레이어 입력 및 이동을 담당하는 클래스
     /// </summary>
-    [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
     {
-        [SerializeField]
-        [Tooltip("좌우 이동 속도")]
-        private float moveSpeed = 5f;
+        [Header("Movement")]
+        [SerializeField] private float walkSpeed = 3f;
+        [SerializeField] private float runSpeed = 6f;
+        [SerializeField] private float airMoveMultiplier = 0.5f;
+
+        [Header("Jump")]
+        [SerializeField] private float jumpForce = 10f;
 
         private Rigidbody2D rb;
-        private Vector2 moveInput;
+        private Animator anim;
+        private TouchingDirection touchingDirection;
+
+        private Vector2 moveInput = Vector2.zero;
+        private bool isRunning = false;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+            anim = GetComponent<Animator>();
+            touchingDirection = GetComponent<TouchingDirection>();
         }
 
-        // 파라미터 타입을 InputAction.CallbackContext로 변경
-        public void OnMove(InputAction.CallbackContext context)
+        private void Update()
         {
-            moveInput = context.ReadValue<Vector2>();
+            if (anim != null)
+            {
+                anim.SetBool(AnimationString.isMove, moveInput.x != 0);
+                anim.SetBool(AnimationString.isRun, isRunning && moveInput.x != 0);
+                anim.SetFloat(AnimationString.velocityY, rb.linearVelocity.y);
+            }
         }
 
         private void FixedUpdate()
         {
             if (rb == null) return;
 
-            Vector2 vel = rb.linearVelocity;
-            vel.x = moveInput.x * moveSpeed;
-            rb.linearVelocity = vel;
+            float currentSpeed = isRunning ? runSpeed : walkSpeed;
+            if (!touchingDirection.IsGround) currentSpeed *= airMoveMultiplier;
+
+            // 벽에 닿으면 이동 막기
+            float xInput = moveInput.x;
+            if (touchingDirection.IsWall) xInput = 0f;
+
+            rb.linearVelocity = new Vector2(xInput * currentSpeed, rb.linearVelocity.y);
+
+            // 천정에 닿으면 위로 가는 속도 제거
+            if (touchingDirection.IsCeiling && rb.linearVelocity.y > 0)
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+            }
+
+            // 플립
+            if (moveInput.x > 0)
+            {
+                transform.localScale = new Vector3(1f, 1f, 1f);
+                touchingDirection.SetFacingRight(true);
+            }
+            else if (moveInput.x < 0)
+            {
+                transform.localScale = new Vector3(-1f, 1f, 1f);
+                touchingDirection.SetFacingRight(false);
+            }
+        }
+
+        public void OnMove(InputAction.CallbackContext context)
+        {
+            moveInput = context.ReadValue<Vector2>();
+        }
+
+        public void OnRun(InputAction.CallbackContext context)
+        {
+            if (context.started)
+            {
+                isRunning = true;
+                Debug.Log("왼쪽 쉬프트키를 누르고 있습니다");
+            }
+            else if (context.canceled)
+            {
+                isRunning = false;
+            }
+        }
+
+        public void OnJump(InputAction.CallbackContext context)
+        {
+            if (context.started && touchingDirection.IsGround)
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            }
         }
     }
 }
