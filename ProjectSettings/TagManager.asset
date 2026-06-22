@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Pipe
   - Point
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -14,7 +15,7 @@ TagManager:
   - Water
   - UI
   - Player
-  - 
+  - Enemy
   - 
   - 
   - 
@@ -45,6 +46,9 @@ TagManager:
     locked: 0
   - name: Ground
     uniqueID: 1343310373
+    locked: 0
+  - name: Enemy
+    uniqueID: 2462326571
     locked: 0
   - name: Player
     uniqueID: 2768185933

@@ -11,9 +11,9 @@ namespace My2DGame
         private CapsuleCollider2D touchingCol;
         private Animator animator;
 
-        [SerializeField] private float groundDistance = 0.05f;
-        [SerializeField] private float wallDistance = 0.05f;
-        [SerializeField] private float ceilDistance = 0.05f;
+        [SerializeField] private float groundDistance = 0.05f;      //그라운드와 체크 거리
+        [SerializeField] private float wallDistance = 0.1f;         //벽까지 체크 거리
+        [SerializeField] private float ceilDistance = 0.05f;        //천장까지 체크 거리
 
         [SerializeField] private ContactFilter2D contactFilter;
 
@@ -23,9 +23,9 @@ namespace My2DGame
 
         private bool isFacingRight = true;
 
-        private bool isGround;
-        private bool isWall;
-        private bool isCeiling;
+        private bool isGround;      //그라운드 체크
+        private bool isWall;        //땅 체크
+        private bool isCeiling;     //천장 체크
         #endregion
 
         #region Property

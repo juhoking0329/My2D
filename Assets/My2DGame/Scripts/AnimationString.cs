@@ -10,5 +10,6 @@ namespace My2DGame
         public const string isMove = "IsMove";
         public const string isRun = "IsRun";
         public const string velocityY = "VelocityY";
+        public static readonly string cannotMove = "CannotMove";
     }
 }

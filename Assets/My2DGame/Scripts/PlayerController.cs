@@ -44,6 +44,8 @@ namespace My2DGame
         {
             if (rb == null) return;
 
+            if (anim.GetBool(AnimationString.cannotMove)) return;
+
             float currentSpeed = isRunning ? runSpeed : walkSpeed;
             if (!touchingDirection.IsGround) currentSpeed *= airMoveMultiplier;
 
@@ -95,6 +97,14 @@ namespace My2DGame
             if (context.started && touchingDirection.IsGround)
             {
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            }
+        }
+
+        public void OnAttack(InputAction.CallbackContext context)
+        {
+            if (context.started)
+            {
+                anim.SetTrigger("AttackTrigger");
             }
         }
     }
