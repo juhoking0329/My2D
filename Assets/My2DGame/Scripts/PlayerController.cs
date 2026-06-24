@@ -3,9 +3,6 @@ using UnityEngine.InputSystem;
 
 namespace My2DGame
 {
-    /// <summary>
-    /// 플레이어 입력 및 이동을 담당하는 클래스
-    /// </summary>
     public class PlayerController : MonoBehaviour
     {
         [Header("Movement")]
@@ -19,15 +16,30 @@ namespace My2DGame
         private Rigidbody2D rb;
         private Animator anim;
         private TouchingDirection touchingDirection;
+        private Damageable damageable; // 추가
 
         private Vector2 moveInput = Vector2.zero;
         private bool isRunning = false;
+
+        #region Property
+        // Enemy 스타일로 프로퍼티 추가
+        public bool CannotMove => anim.GetBool(AnimationString.cannotMove);
+
+        public bool LockVelocity
+        {
+            get { return anim.GetBool(AnimationString.lockVelocity); }
+        }
+        #endregion
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
             anim = GetComponent<Animator>();
             touchingDirection = GetComponent<TouchingDirection>();
+            damageable = GetComponent<Damageable>(); // 추가
+
+            // 이벤트 함수 등록
+            damageable.hitAction += OnHit;
         }
 
         private void Update()
@@ -44,21 +56,28 @@ namespace My2DGame
         {
             if (rb == null) return;
 
-            if (anim.GetBool(AnimationString.cannotMove)) return;
-
-            float currentSpeed = isRunning ? runSpeed : walkSpeed;
-            if (!touchingDirection.IsGround) currentSpeed *= airMoveMultiplier;
-
-            // 벽에 닿으면 이동 막기
-            float xInput = moveInput.x;
-            if (touchingDirection.IsWall) xInput = 0f;
-
-            rb.linearVelocity = new Vector2(xInput * currentSpeed, rb.linearVelocity.y);
-
-            // 천정에 닿으면 위로 가는 속도 제거
-            if (touchingDirection.IsCeiling && rb.linearVelocity.y > 0)
+            // Enemy처럼 LockVelocity로 넉백 처리
+            if (LockVelocity == false)
             {
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+                if (CannotMove == false)
+                {
+                    float currentSpeed = isRunning ? runSpeed : walkSpeed;
+                    if (!touchingDirection.IsGround) currentSpeed *= airMoveMultiplier;
+
+                    float xInput = moveInput.x;
+                    if (touchingDirection.IsWall) xInput = 0f;
+
+                    rb.linearVelocity = new Vector2(xInput * currentSpeed, rb.linearVelocity.y);
+
+                    if (touchingDirection.IsCeiling && rb.linearVelocity.y > 0)
+                    {
+                        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+                    }
+                }
+                else
+                {
+                    rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+                }
             }
 
             // 플립
@@ -84,7 +103,6 @@ namespace My2DGame
             if (context.started)
             {
                 isRunning = true;
-                Debug.Log("왼쪽 쉬프트키를 누르고 있습니다");
             }
             else if (context.canceled)
             {
@@ -104,8 +122,14 @@ namespace My2DGame
         {
             if (context.started)
             {
-                anim.SetTrigger("AttackTrigger");
+                anim.SetTrigger(AnimationString.attackTrigger);
             }
+        }
+
+        // Enemy처럼 넉백 이벤트 함수 추가
+        void OnHit(float damage, Vector2 knockback)
+        {
+            rb.linearVelocity = new Vector2(knockback.x, rb.linearVelocity.y + knockback.y);
         }
     }
 }
